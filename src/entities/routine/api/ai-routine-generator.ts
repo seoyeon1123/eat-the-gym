@@ -9,7 +9,7 @@ interface GenerateInput {
 }
 
 // AI API 타입 정의
-type AIProvider = 'groq' | 'gemini' | 'openai' | 'claude' | 'together'
+export type AIProvider = 'groq' | 'gemini' | 'openai' | 'claude' | 'together'
 
 interface AIConfig {
   provider: AIProvider
