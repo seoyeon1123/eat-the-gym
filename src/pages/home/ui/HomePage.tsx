@@ -9,8 +9,9 @@ import {
   type WorkoutConfig,
 } from "@/widgets/workout-settings";
 import { RoutineResults, type RoutineData } from "@/widgets/routine-results";
+import { AiTrainerChat } from "@/widgets/ai-trainer-chat";
 import { generateRoutineWithAI } from "@/entities/routine/api";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, MessageCircle } from "lucide-react";
 
 type AppStep = "landing" | "equipment" | "settings" | "results";
 
@@ -27,6 +28,7 @@ export function HomePage() {
   const [routine, setRoutine] = useState<RoutineData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleGenerate = useCallback(async () => {
     setStep("results");
@@ -76,75 +78,101 @@ export function HomePage() {
 
   if (step === "landing") {
     return (
-      <main className="relative min-h-dvh">
-        <HeroSection onStart={() => setStep("equipment")} />
-      </main>
+      <>
+        <main className="relative min-h-dvh">
+          <HeroSection onStart={() => setStep("equipment")} />
+        </main>
+
+        {/* Floating AI trainer button */}
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="fixed bottom-5 right-5 z-50 flex h-11 items-center gap-2 rounded-full bg-[#111827] px-4 text-xs font-semibold text-white/90 shadow-[0_10px_35px_rgba(0,0,0,0.65)] ring-1 ring-white/10 backdrop-blur-md active:scale-95"
+        >
+          <MessageCircle className="h-4 w-4 text-emerald-400" />
+          <span>AI 헬스 트레이너</span>
+        </button>
+
+        <AiTrainerChat open={isChatOpen} onOpenChange={setIsChatOpen} />
+      </>
     );
   }
 
   return (
-    <main className="relative flex min-h-dvh flex-col">
-      {/* App bar */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 px-5 pb-3 pt-4 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-lg flex-col gap-3">
-          {/* Logo row */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 transition-opacity active:opacity-70"
-            >
-              <Dumbbell className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold text-foreground">
-                {"헬스장 "}
-                <span className="text-primary">{"파먹기"}</span>
+    <>
+      <main className="relative flex min-h-dvh flex-col">
+        {/* App bar */}
+        <header className="sticky top-0 z-50 border-b border-border bg-background/80 px-5 pb-3 pt-4 backdrop-blur-xl">
+          <div className="mx-auto flex max-w-lg flex-col gap-3">
+            {/* Logo row */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-2 transition-opacity active:opacity-70"
+              >
+                <Dumbbell className="h-4 w-4 text-primary" />
+                <span className="text-sm font-bold text-foreground">
+                  {"헬스장 "}
+                  <span className="text-primary">{"파먹기"}</span>
+                </span>
+              </button>
+              <span className="text-xs text-muted-foreground">
+                {getStepNumber()}/3
               </span>
-            </button>
-            <span className="text-xs text-muted-foreground">
-              {getStepNumber()}/3
-            </span>
+            </div>
+            {/* Progress */}
+            <StepIndicator
+              currentStep={getStepNumber()}
+              totalSteps={3}
+              labels={stepLabels}
+            />
           </div>
-          {/* Progress */}
-          <StepIndicator
-            currentStep={getStepNumber()}
-            totalSteps={3}
-            labels={stepLabels}
-          />
+        </header>
+
+        {/* Content area */}
+        <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5 py-5">
+          <div
+            key={step}
+            className="flex flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200"
+          >
+            {step === "equipment" && (
+              <EquipmentSelector
+                selected={selectedEquipment}
+                onSelectionChange={setSelectedEquipment}
+                onNext={() => setStep("settings")}
+              />
+            )}
+
+            {step === "settings" && (
+              <WorkoutSettings
+                config={workoutConfig}
+                onConfigChange={setWorkoutConfig}
+                onNext={handleGenerate}
+                onBack={() => setStep("equipment")}
+              />
+            )}
+
+            {step === "results" && (
+              <RoutineResults
+                routine={routine}
+                isLoading={isLoading}
+                error={error}
+                onReset={handleReset}
+              />
+            )}
+          </div>
         </div>
-      </header>
+      </main>
 
-      {/* Content area */}
-      <div className="mx-auto flex w-full max-w-lg flex-1 flex-col px-5 py-5">
-        <div
-          key={step}
-          className="flex flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200"
-        >
-          {step === "equipment" && (
-            <EquipmentSelector
-              selected={selectedEquipment}
-              onSelectionChange={setSelectedEquipment}
-              onNext={() => setStep("settings")}
-            />
-          )}
+      {/* Floating AI trainer button */}
+      <button
+        onClick={() => setIsChatOpen(true)}
+        className="fixed bottom-5 right-5 z-50 flex h-11 items-center gap-2 rounded-full bg-[#111827] px-4 text-xs font-semibold text-white/90 shadow-[0_10px_35px_rgba(0,0,0,0.65)] ring-1 ring-white/10 backdrop-blur-md active:scale-95"
+      >
+        <MessageCircle className="h-4 w-4 text-emerald-400" />
+        <span>AI 헬스 트레이너</span>
+      </button>
 
-          {step === "settings" && (
-            <WorkoutSettings
-              config={workoutConfig}
-              onConfigChange={setWorkoutConfig}
-              onNext={handleGenerate}
-              onBack={() => setStep("equipment")}
-            />
-          )}
-
-          {step === "results" && (
-            <RoutineResults
-              routine={routine}
-              isLoading={isLoading}
-              error={error}
-              onReset={handleReset}
-            />
-          )}
-        </div>
-      </div>
-    </main>
+      <AiTrainerChat open={isChatOpen} onOpenChange={setIsChatOpen} />
+    </>
   );
 }
