@@ -1,20 +1,30 @@
-'use client'
+"use client";
 
-import { cn } from '@/shared/lib'
-import { frequencyOptions, splitOptions, focusOptions } from '@/entities/equipment'
-import { ChevronLeft, ChevronRight, Calendar, LayoutGrid, Target } from 'lucide-react'
+import { cn } from "@/shared/lib";
+import {
+  frequencyOptions,
+  splitOptions,
+  focusOptions,
+} from "@/entities/equipment";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  LayoutGrid,
+  Target,
+} from "lucide-react";
 
 export interface WorkoutConfig {
-  frequency: string
-  split: string
-  focus: string
+  frequency: string;
+  split: string;
+  focus: string;
 }
 
 interface WorkoutSettingsProps {
-  config: WorkoutConfig
-  onConfigChange: (config: WorkoutConfig) => void
-  onNext: () => void
-  onBack: () => void
+  config: WorkoutConfig;
+  onConfigChange: (config: WorkoutConfig) => void;
+  onNext: () => void;
+  onBack: () => void;
 }
 
 function SliderOption({
@@ -24,19 +34,19 @@ function SliderOption({
   value,
   onChange,
 }: {
-  label: string
-  icon: React.ElementType
-  options: { value: string; label: string }[]
-  value: string
-  onChange: (value: string) => void
+  label: string;
+  icon: React.ElementType;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
 }) {
-  const currentIndex = options.findIndex((opt) => opt.value === value)
-  const sliderValue = currentIndex >= 0 ? currentIndex : 0
+  const currentIndex = options.findIndex((opt) => opt.value === value);
+  const sliderValue = currentIndex >= 0 ? currentIndex : 0;
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newIndex = parseInt(e.target.value)
-    onChange(options[newIndex].value)
-  }
+    const newIndex = parseInt(e.target.value);
+    onChange(options[newIndex].value);
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -58,7 +68,11 @@ function SliderOption({
           onChange={handleSliderChange}
           className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer slider"
           style={{
-            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(sliderValue / (options.length - 1)) * 100}%, hsl(var(--secondary)) ${(sliderValue / (options.length - 1)) * 100}%, hsl(var(--secondary)) 100%)`,
+            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${
+              (sliderValue / (options.length - 1)) * 100
+            }%, hsl(var(--secondary)) ${
+              (sliderValue / (options.length - 1)) * 100
+            }%, hsl(var(--secondary)) 100%)`,
           }}
         />
         <div className="flex justify-between mt-2 px-1">
@@ -66,8 +80,8 @@ function SliderOption({
             <span
               key={option.value}
               className={cn(
-                'text-base font-semibold',
-                index === sliderValue ? 'text-primary' : 'text-muted-foreground'
+                "text-base font-semibold",
+                index === sliderValue ? "text-primary" : "text-muted-foreground"
               )}
             >
               {index + 1}
@@ -76,7 +90,7 @@ function SliderOption({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function OptionGroup({
@@ -87,12 +101,12 @@ function OptionGroup({
   onChange,
   scrollable = false,
 }: {
-  label: string
-  icon: React.ElementType
-  options: { value: string; label: string }[]
-  value: string
-  onChange: (value: string) => void
-  scrollable?: boolean
+  label: string;
+  icon: React.ElementType;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  scrollable?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -107,10 +121,10 @@ function OptionGroup({
               key={option.value}
               onClick={() => onChange(option.value)}
               className={cn(
-                'shrink-0 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95',
+                "shrink-0 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95",
                 value === option.value
-                  ? 'bg-foreground text-background'
-                  : 'bg-card text-muted-foreground ring-1 ring-border active:bg-secondary'
+                  ? "bg-foreground text-background"
+                  : "bg-card text-muted-foreground ring-1 ring-border active:bg-secondary"
               )}
             >
               {option.label}
@@ -124,10 +138,10 @@ function OptionGroup({
               key={option.value}
               onClick={() => onChange(option.value)}
               className={cn(
-                'rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95',
+                "rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95",
                 value === option.value
-                  ? 'bg-foreground text-background'
-                  : 'bg-card text-muted-foreground ring-1 ring-border active:bg-secondary'
+                  ? "bg-foreground text-background"
+                  : "bg-card text-muted-foreground ring-1 ring-border active:bg-secondary"
               )}
             >
               {option.label}
@@ -136,16 +150,23 @@ function OptionGroup({
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export function WorkoutSettings({ config, onConfigChange, onNext, onBack }: WorkoutSettingsProps) {
+export function WorkoutSettings({
+  config,
+  onConfigChange,
+  onNext,
+  onBack,
+}: WorkoutSettingsProps) {
   return (
     <div className="flex flex-1 flex-col">
       {/* Title */}
       <div className="px-1 pb-6">
         <h2 className="text-xl font-bold text-foreground">운동 설정</h2>
-        <p className="mt-1 text-sm text-muted-foreground">루틴에 반영할 설정을 선택하세요</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          루틴에 반영할 설정을 선택하세요
+        </p>
       </div>
 
       <div className="flex flex-1 flex-col gap-8">
@@ -191,5 +212,5 @@ export function WorkoutSettings({ config, onConfigChange, onNext, onBack }: Work
         </button>
       </div>
     </div>
-  )
+  );
 }
