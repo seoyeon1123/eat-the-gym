@@ -9,6 +9,7 @@ export interface Exercise {
   sets: number
   reps: number
   rest: string
+  type?: string // 머신/바벨/덤벨
 }
 
 export interface DayRoutine {
@@ -32,13 +33,41 @@ interface RoutineResultsProps {
 }
 
 function ExerciseRow({ exercise, index }: { exercise: Exercise; index: number }) {
+  // 운동 이름에서 타입 추출 (예: "벤치프레스 (바벨)" -> "벤치프레스", "바벨")
+  const extractType = (name: string): { name: string; type: string | null } => {
+    const match = name.match(/^(.+?)\s*\(([^)]+)\)$/)
+    if (match) {
+      return { name: match[1].trim(), type: match[2].trim() }
+    }
+    return { name, type: null }
+  }
+
+  const { name: exerciseName, type } = extractType(exercise.name)
+  const displayType = type || exercise.type
+
+  const typeLabels: Record<string, string> = {
+    '머신': '머신',
+    '바벨': '바벨',
+    '덤벨': '덤벨',
+    'machine': '머신',
+    'barbell': '바벨',
+    'dumbbell': '덤벨',
+  }
+
   return (
     <div className="flex items-center gap-3 px-1 py-2">
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-secondary text-[11px] font-bold text-muted-foreground">
         {index + 1}
       </span>
       <div className="flex-1">
-        <p className="text-sm font-medium text-foreground">{exercise.name}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-foreground">{exerciseName}</p>
+          {displayType && (
+            <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+              {typeLabels[displayType] || displayType}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">

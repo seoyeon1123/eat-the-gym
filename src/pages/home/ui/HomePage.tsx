@@ -23,7 +23,7 @@ export function HomePage() {
   const [workoutConfig, setWorkoutConfig] = useState<WorkoutConfig>({
     frequency: "3",
     split: "3",
-    goal: "hypertrophy",
+    focus: "lower",
   });
   const [routine, setRoutine] = useState<RoutineData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +42,7 @@ export function HomePage() {
         selectedEquipment,
         frequency: workoutConfig.frequency,
         split: workoutConfig.split,
-        goal: workoutConfig.goal,
+        focus: workoutConfig.focus,
       });
 
       setRoutine(result);
@@ -59,7 +59,7 @@ export function HomePage() {
   const handleReset = () => {
     setStep("landing");
     setSelectedEquipment([]);
-    setWorkoutConfig({ frequency: "3", split: "3", goal: "hypertrophy" });
+    setWorkoutConfig({ frequency: "3", split: "3", focus: "lower" });
     setRoutine(null);
   };
 

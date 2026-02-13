@@ -1,13 +1,13 @@
 'use client'
 
 import { cn } from '@/shared/lib'
-import { frequencyOptions, splitOptions, goalOptions } from '@/entities/equipment'
+import { frequencyOptions, splitOptions, focusOptions } from '@/entities/equipment'
 import { ChevronLeft, ChevronRight, Calendar, LayoutGrid, Target } from 'lucide-react'
 
 export interface WorkoutConfig {
   frequency: string
   split: string
-  goal: string
+  focus: string
 }
 
 interface WorkoutSettingsProps {
@@ -17,7 +17,7 @@ interface WorkoutSettingsProps {
   onBack: () => void
 }
 
-function OptionGroup({
+function SliderOption({
   label,
   icon: Icon,
   options,
@@ -30,28 +30,111 @@ function OptionGroup({
   value: string
   onChange: (value: string) => void
 }) {
+  const currentIndex = options.findIndex((opt) => opt.value === value)
+  const sliderValue = currentIndex >= 0 ? currentIndex : 0
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newIndex = parseInt(e.target.value)
+    onChange(options[newIndex].value)
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2.5">
+          <Icon className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold text-foreground">{label}</span>
+        </div>
+        <span className="text-base font-bold text-primary">
+          {options[currentIndex]?.label || options[0].label}
+        </span>
+      </div>
+      <div className="relative px-2">
+        <input
+          type="range"
+          min="0"
+          max={options.length - 1}
+          value={sliderValue}
+          onChange={handleSliderChange}
+          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer slider"
+          style={{
+            background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${(sliderValue / (options.length - 1)) * 100}%, hsl(var(--secondary)) ${(sliderValue / (options.length - 1)) * 100}%, hsl(var(--secondary)) 100%)`,
+          }}
+        />
+        <div className="flex justify-between mt-2 px-1">
+          {options.map((option, index) => (
+            <span
+              key={option.value}
+              className={cn(
+                'text-base font-semibold',
+                index === sliderValue ? 'text-primary' : 'text-muted-foreground'
+              )}
+            >
+              {index + 1}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function OptionGroup({
+  label,
+  icon: Icon,
+  options,
+  value,
+  onChange,
+  scrollable = false,
+}: {
+  label: string
+  icon: React.ElementType
+  options: { value: string; label: string }[]
+  value: string
+  onChange: (value: string) => void
+  scrollable?: boolean
+}) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2.5 px-1">
         <Icon className="h-4 w-4 text-primary" />
         <span className="text-sm font-semibold text-foreground">{label}</span>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <button
-            key={option.value}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              'rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95',
-              value === option.value
-                ? 'bg-foreground text-background'
-                : 'bg-card text-muted-foreground ring-1 ring-border active:bg-secondary'
-            )}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
+      {scrollable ? (
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              className={cn(
+                'shrink-0 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95',
+                value === option.value
+                  ? 'bg-foreground text-background'
+                  : 'bg-card text-muted-foreground ring-1 ring-border active:bg-secondary'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {options.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => onChange(option.value)}
+              className={cn(
+                'rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95',
+                value === option.value
+                  ? 'bg-foreground text-background'
+                  : 'bg-card text-muted-foreground ring-1 ring-border active:bg-secondary'
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -66,7 +149,7 @@ export function WorkoutSettings({ config, onConfigChange, onNext, onBack }: Work
       </div>
 
       <div className="flex flex-1 flex-col gap-8">
-        <OptionGroup
+        <SliderOption
           label="운동 빈도"
           icon={Calendar}
           options={frequencyOptions}
@@ -83,11 +166,11 @@ export function WorkoutSettings({ config, onConfigChange, onNext, onBack }: Work
         />
 
         <OptionGroup
-          label="운동 목표"
+          label="중심"
           icon={Target}
-          options={goalOptions}
-          value={config.goal}
-          onChange={(value) => onConfigChange({ ...config, goal: value })}
+          options={focusOptions}
+          value={config.focus}
+          onChange={(value) => onConfigChange({ ...config, focus: value })}
         />
       </div>
 

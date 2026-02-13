@@ -1,4 +1,4 @@
-import { equipmentCategories } from '@/entities/equipment'
+import { equipmentCategories, exercisesByCategory } from '@/entities/equipment'
 import type { RoutineData, DayRoutine, Exercise } from '@/widgets/routine-results'
 
 interface GenerateInput {
@@ -17,48 +17,80 @@ interface ExerciseTemplate {
 }
 
 const exerciseDB: ExerciseTemplate[] = [
-  // Chest
-  { name: '벤치프레스', equipmentId: 'bench-press', muscleGroup: 'chest', isCompound: true },
-  { name: '인클라인 벤치프레스', equipmentId: 'incline-bench', muscleGroup: 'chest', isCompound: true },
-  { name: '체스트프레스 머신', equipmentId: 'chest-press', muscleGroup: 'chest', isCompound: true },
-  { name: '케이블 플라이', equipmentId: 'cable-fly', muscleGroup: 'chest', isCompound: false },
+  // Chest - Machine
+  { name: '체스트프레스', equipmentId: 'chest-press', muscleGroup: 'chest', isCompound: true },
   { name: '펙덱 플라이', equipmentId: 'pec-deck', muscleGroup: 'chest', isCompound: false },
   { name: '딥스 머신', equipmentId: 'dip-machine', muscleGroup: 'chest', isCompound: true },
+  { name: '케이블 플라이', equipmentId: 'cable-fly', muscleGroup: 'chest', isCompound: false },
+  // Chest - Barbell
+  { name: '벤치프레스', equipmentId: 'bench-press', muscleGroup: 'chest', isCompound: true },
+  { name: '인클라인 벤치프레스', equipmentId: 'incline-bench', muscleGroup: 'chest', isCompound: true },
+  { name: '디클라인 벤치프레스', equipmentId: 'decline-bench', muscleGroup: 'chest', isCompound: true },
+  // Chest - Dumbbell
+  { name: '덤벨 벤치프레스', equipmentId: 'db-bench-press', muscleGroup: 'chest', isCompound: true },
+  { name: '덤벨 인클라인 프레스', equipmentId: 'db-incline-press', muscleGroup: 'chest', isCompound: true },
+  { name: '덤벨 플라이', equipmentId: 'db-fly', muscleGroup: 'chest', isCompound: false },
+  { name: '덤벨 풀오버', equipmentId: 'db-pullover', muscleGroup: 'chest', isCompound: false },
 
-  // Shoulder
+  // Shoulder - Machine
   { name: '숄더프레스 머신', equipmentId: 'shoulder-press', muscleGroup: 'shoulder', isCompound: true },
-  { name: '덤벨 숄더프레스', equipmentId: 'db-shoulder-press', muscleGroup: 'shoulder', isCompound: true },
   { name: '레터럴 레이즈 머신', equipmentId: 'lateral-raise-machine', muscleGroup: 'shoulder', isCompound: false },
-  { name: '리어 델트 플라이', equipmentId: 'rear-delt-fly', muscleGroup: 'shoulder', isCompound: false },
   { name: '케이블 레터럴 레이즈', equipmentId: 'cable-lateral', muscleGroup: 'shoulder', isCompound: false },
   { name: '페이스 풀', equipmentId: 'face-pull', muscleGroup: 'shoulder', isCompound: false },
+  // Shoulder - Barbell
+  { name: '바벨 숄더프레스', equipmentId: 'bb-shoulder-press', muscleGroup: 'shoulder', isCompound: true },
+  { name: '바벨 업라이트 로우', equipmentId: 'bb-upright-row', muscleGroup: 'shoulder', isCompound: true },
+  { name: '바벨 프론트 레이즈', equipmentId: 'bb-front-raise', muscleGroup: 'shoulder', isCompound: false },
+  // Shoulder - Dumbbell
+  { name: '덤벨 숄더프레스', equipmentId: 'db-shoulder-press', muscleGroup: 'shoulder', isCompound: true },
+  { name: '덤벨 레터럴 레이즈', equipmentId: 'db-lateral-raise', muscleGroup: 'shoulder', isCompound: false },
+  { name: '덤벨 리어 델트 플라이', equipmentId: 'db-rear-delt-fly', muscleGroup: 'shoulder', isCompound: false },
+  { name: '덤벨 프론트 레이즈', equipmentId: 'db-front-raise', muscleGroup: 'shoulder', isCompound: false },
 
-  // Back
+  // Back - Machine
   { name: '랫풀다운', equipmentId: 'lat-pulldown', muscleGroup: 'back', isCompound: true },
   { name: '시티드 로우', equipmentId: 'seated-row', muscleGroup: 'back', isCompound: true },
   { name: '케이블 로우', equipmentId: 'cable-row', muscleGroup: 'back', isCompound: true },
-  { name: '풀업', equipmentId: 'pull-up-bar', muscleGroup: 'back', isCompound: true },
-  { name: '티바 로우', equipmentId: 't-bar-row', muscleGroup: 'back', isCompound: true },
   { name: '백 익스텐션', equipmentId: 'back-extension', muscleGroup: 'back', isCompound: false },
+  // Back - Barbell
+  { name: '바벨 벤트오버 로우', equipmentId: 'bb-bent-over-row', muscleGroup: 'back', isCompound: true },
+  { name: '바벨 데드리프트', equipmentId: 'bb-deadlift', muscleGroup: 'back', isCompound: true },
+  { name: '티바 로우', equipmentId: 't-bar-row', muscleGroup: 'back', isCompound: true },
+  // Back - Dumbbell
+  { name: '덤벨 로우', equipmentId: 'db-row', muscleGroup: 'back', isCompound: true },
+  { name: '덤벨 풀오버', equipmentId: 'db-pullover', muscleGroup: 'back', isCompound: false },
+  { name: '덤벨 슈러그', equipmentId: 'db-shrug', muscleGroup: 'back', isCompound: false },
+  { name: '풀업', equipmentId: 'pull-up-bar', muscleGroup: 'back', isCompound: true },
 
-  // Legs
+  // Legs - Machine
   { name: '레그 프레스', equipmentId: 'leg-press', muscleGroup: 'legs', isCompound: true },
-  { name: '바벨 스쿼트', equipmentId: 'squat-rack', muscleGroup: 'legs', isCompound: true },
   { name: '레그 익스텐션', equipmentId: 'leg-extension', muscleGroup: 'legs', isCompound: false },
   { name: '레그 컬', equipmentId: 'leg-curl', muscleGroup: 'legs', isCompound: false },
   { name: '핵 스쿼트', equipmentId: 'hack-squat', muscleGroup: 'legs', isCompound: true },
   { name: '카프 레이즈', equipmentId: 'calf-raise', muscleGroup: 'legs', isCompound: false },
+  // Legs - Barbell
+  { name: '바벨 스쿼트', equipmentId: 'squat-rack', muscleGroup: 'legs', isCompound: true },
+  { name: '바벨 루마니안 데드리프트', equipmentId: 'bb-romanian-deadlift', muscleGroup: 'legs', isCompound: true },
+  { name: '바벨 런지', equipmentId: 'bb-lunge', muscleGroup: 'legs', isCompound: true },
+  // Legs - Dumbbell
+  { name: '덤벨 스쿼트', equipmentId: 'db-squat', muscleGroup: 'legs', isCompound: true },
+  { name: '덤벨 런지', equipmentId: 'db-lunge', muscleGroup: 'legs', isCompound: true },
+  { name: '덤벨 루마니안 데드리프트', equipmentId: 'db-romanian-deadlift', muscleGroup: 'legs', isCompound: true },
   { name: '힙 쓰러스트', equipmentId: 'hip-thrust', muscleGroup: 'legs', isCompound: true },
 
-  // Arms
+  // Arms - Machine
   { name: '바이셉 컬 머신', equipmentId: 'bicep-curl-machine', muscleGroup: 'arms-bicep', isCompound: false },
   { name: '트라이셉 푸시다운', equipmentId: 'tricep-pushdown', muscleGroup: 'arms-tricep', isCompound: false },
-  { name: '프리처 컬', equipmentId: 'preacher-curl', muscleGroup: 'arms-bicep', isCompound: false },
   { name: '케이블 컬', equipmentId: 'cable-curl', muscleGroup: 'arms-bicep', isCompound: false },
-  { name: '덤벨 컬', equipmentId: 'dumbbell-rack', muscleGroup: 'arms-bicep', isCompound: false },
-  { name: '덤벨 트라이셉 익스텐션', equipmentId: 'dumbbell-rack', muscleGroup: 'arms-tricep', isCompound: false },
+  // Arms - Barbell
+  { name: '바벨 바이셉 컬', equipmentId: 'bb-bicep-curl', muscleGroup: 'arms-bicep', isCompound: false },
   { name: 'EZ바 컬', equipmentId: 'ez-bar', muscleGroup: 'arms-bicep', isCompound: false },
-  { name: 'EZ바 스컬크러셔', equipmentId: 'ez-bar', muscleGroup: 'arms-tricep', isCompound: false },
+  { name: '바벨 트라이셉 익스텐션', equipmentId: 'bb-tricep-extension', muscleGroup: 'arms-tricep', isCompound: false },
+  // Arms - Dumbbell
+  { name: '덤벨 바이셉 컬', equipmentId: 'db-bicep-curl', muscleGroup: 'arms-bicep', isCompound: false },
+  { name: '덤벨 트라이셉 익스텐션', equipmentId: 'db-tricep-extension', muscleGroup: 'arms-tricep', isCompound: false },
+  { name: '프리처 컬', equipmentId: 'preacher-curl', muscleGroup: 'arms-bicep', isCompound: false },
+  { name: '덤벨 랙', equipmentId: 'dumbbell-rack', muscleGroup: 'arms-bicep', isCompound: false },
 
   // Core
   { name: '복근 크런치 머신', equipmentId: 'ab-crunch', muscleGroup: 'core', isCompound: false },
@@ -246,9 +278,12 @@ export function generateRoutine(input: GenerateInput): RoutineData {
   // Count selected equipment names for the description
   const equipNames = selectedEquipment
     .map((id) => {
-      for (const cat of equipmentCategories) {
-        const eq = cat.equipment.find((e) => e.id === id)
-        if (eq) return eq.name
+      // 모든 부위 운동을 exercisesByCategory에서 찾기
+      for (const categoryExercises of Object.values(exercisesByCategory)) {
+        for (const subCategoryExercises of Object.values(categoryExercises)) {
+          const eq = subCategoryExercises.find((e) => e.id === id)
+          if (eq) return eq.name
+        }
       }
       return null
     })
