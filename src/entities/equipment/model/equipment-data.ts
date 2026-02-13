@@ -175,6 +175,12 @@ export const focusOptions = [
   { value: 'glutes', label: '엉덩이' },
 ]
 
+export const experienceLevelOptions = [
+  { value: 'beginner', label: '초보' },
+  { value: 'intermediate', label: '중급' },
+  { value: 'advanced', label: '고급' },
+]
+
 // 하위 호환성을 위한 goalOptions (기존 코드와의 호환)
 export const goalOptions = [
   { value: 'hypertrophy', label: '근비대' },

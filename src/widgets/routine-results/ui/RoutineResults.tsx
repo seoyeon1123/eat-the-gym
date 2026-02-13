@@ -1,58 +1,101 @@
-'use client'
+"use client";
 
-import { cn } from '@/shared/lib'
-import { Copy, RotateCcw, Check, Loader2, Timer, Repeat } from 'lucide-react'
-import { useState } from 'react'
+import { cn } from "@/shared/lib";
+import {
+  Copy,
+  RotateCcw,
+  Check,
+  Loader2,
+  Timer,
+  Repeat,
+  Share2,
+} from "lucide-react";
+import { useState, useEffect } from "react";
+
+// 카카오톡 SDK 타입 정의
+declare global {
+  interface Window {
+    Kakao?: {
+      init: (key: string) => void;
+      isInitialized: () => boolean;
+      Share: {
+        sendDefault: (options: {
+          objectType: string;
+          text?: string;
+          content?: {
+            title: string;
+            description: string;
+            imageUrl: string;
+            link: {
+              mobileWebUrl: string;
+              webUrl: string;
+            };
+          };
+          link?: {
+            mobileWebUrl: string;
+            webUrl: string;
+          };
+        }) => void;
+      };
+    };
+  }
+}
 
 export interface Exercise {
-  name: string
-  sets: number
-  reps: number
-  rest: string
-  type?: string // 머신/바벨/덤벨
+  name: string;
+  sets: number;
+  reps: number;
+  rest: string;
+  type?: string; // 머신/바벨/덤벨
 }
 
 export interface DayRoutine {
-  day: string
-  focus: string
-  exercises: Exercise[]
+  day: string;
+  focus: string;
+  exercises: Exercise[];
 }
 
 export interface RoutineData {
-  routineName: string
-  description: string
-  days: DayRoutine[]
-  tips: string[]
+  routineName: string;
+  description: string;
+  days: DayRoutine[];
+  tips: string[];
 }
 
 interface RoutineResultsProps {
-  routine: RoutineData | null
-  isLoading: boolean
-  error?: string | null
-  onReset: () => void
+  routine: RoutineData | null;
+  isLoading: boolean;
+  error?: string | null;
+  onReset: () => void;
 }
 
-function ExerciseRow({ exercise, index }: { exercise: Exercise; index: number }) {
+function ExerciseRow({
+  exercise,
+  index,
+}: {
+  exercise: Exercise;
+  index: number;
+}) {
   // 운동 이름에서 타입 추출 (예: "벤치프레스 (바벨)" -> "벤치프레스", "바벨")
   const extractType = (name: string): { name: string; type: string | null } => {
-    const match = name.match(/^(.+?)\s*\(([^)]+)\)$/)
+    const match = name.match(/^(.+?)\s*\(([^)]+)\)$/);
     if (match) {
-      return { name: match[1].trim(), type: match[2].trim() }
+      return { name: match[1].trim(), type: match[2].trim() };
     }
-    return { name, type: null }
-  }
+    return { name, type: null };
+  };
 
-  const { name: exerciseName, type } = extractType(exercise.name)
-  const displayType = type || exercise.type
+  const { name: exerciseName, type } = extractType(exercise.name);
+  const displayType = type || exercise.type;
 
   const typeLabels: Record<string, string> = {
-    '머신': '머신',
-    '바벨': '바벨',
-    '덤벨': '덤벨',
-    'machine': '머신',
-    'barbell': '바벨',
-    'dumbbell': '덤벨',
-  }
+    머신: "머신",
+    바벨: "바벨",
+    덤벨: "덤벨",
+    machine: "머신",
+    barbell: "바벨",
+    dumbbell: "덤벨",
+  };
 
   return (
     <div className="flex items-center gap-3 px-1 py-2">
@@ -80,40 +123,50 @@ function ExerciseRow({ exercise, index }: { exercise: Exercise; index: number })
         </span>
       </div>
     </div>
-  )
+  );
 }
 
-function DayCard({ dayRoutine, index }: { dayRoutine: DayRoutine; index: number }) {
-  const [copied, setCopied] = useState(false)
+function DayCard({
+  dayRoutine,
+  index,
+}: {
+  dayRoutine: DayRoutine;
+  index: number;
+}) {
+  const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
-    const text = `${dayRoutine.day} - ${dayRoutine.focus}\n${dayRoutine.exercises
+    const text = `${dayRoutine.day} - ${
+      dayRoutine.focus
+    }\n${dayRoutine.exercises
       .map((e) => `${e.name} ${e.sets}x${e.reps} (${e.rest})`)
-      .join('\n')}`
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+      .join("\n")}`;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const dayColors = [
-    'from-primary/15 to-primary/5',
-    'from-primary/10 to-transparent',
-    'from-primary/8 to-transparent',
-    'from-primary/6 to-transparent',
-    'from-primary/5 to-transparent',
-  ]
+    "from-primary/15 to-primary/5",
+    "from-primary/10 to-transparent",
+    "from-primary/8 to-transparent",
+    "from-primary/6 to-transparent",
+    "from-primary/5 to-transparent",
+  ];
 
   return (
     <div className="overflow-hidden rounded-2xl bg-card ring-1 ring-border">
       {/* Day header with gradient */}
       <div
         className={cn(
-          'flex items-center justify-between bg-gradient-to-r px-4 py-3',
+          "flex items-center justify-between bg-gradient-to-r px-4 py-3",
           dayColors[index % dayColors.length]
         )}
       >
         <div>
-          <h3 className="text-[15px] font-bold text-foreground">{dayRoutine.day}</h3>
+          <h3 className="text-[15px] font-bold text-foreground">
+            {dayRoutine.day}
+          </h3>
           <p className="text-xs font-medium text-primary">{dayRoutine.focus}</p>
         </div>
         <button
@@ -151,26 +204,95 @@ function DayCard({ dayRoutine, index }: { dayRoutine: DayRoutine; index: number 
         </span>
       </div>
     </div>
-  )
+  );
 }
 
-export function RoutineResults({ routine, isLoading, error, onReset }: RoutineResultsProps) {
-  const [allCopied, setAllCopied] = useState(false)
+export function RoutineResults({
+  routine,
+  isLoading,
+  error,
+  onReset,
+}: RoutineResultsProps) {
+  const [allCopied, setAllCopied] = useState(false);
+
+  // 카카오톡 SDK 초기화
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.Kakao) {
+      const Kakao = window.Kakao;
+      if (!Kakao.isInitialized()) {
+        // ⚠️ 중요: REST API 키가 아닌 JavaScript 키를 사용해야 합니다!
+        // 카카오 개발자 콘솔 > 앱 설정 > 앱 키 > JavaScript 키를 복사하세요.
+        // .env 파일에 VITE_KAKAO_JS_KEY=your_javascript_key_here 형식으로 추가하세요.
+        const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JS_KEY || "";
+        if (KAKAO_JS_KEY) {
+          Kakao.init(KAKAO_JS_KEY);
+        }
+      }
+    }
+  }, []);
 
   const copyAll = () => {
-    if (!routine) return
+    if (!routine) return;
     const text = routine.days
       .map(
         (day) =>
           `${day.day} - ${day.focus}\n${day.exercises
             .map((e) => `  ${e.name} ${e.sets}x${e.reps} (${e.rest})`)
-            .join('\n')}`
+            .join("\n")}`
       )
-      .join('\n\n')
-    navigator.clipboard.writeText(text)
-    setAllCopied(true)
-    setTimeout(() => setAllCopied(false), 2000)
-  }
+      .join("\n\n");
+    navigator.clipboard.writeText(text);
+    setAllCopied(true);
+    setTimeout(() => setAllCopied(false), 2000);
+  };
+
+  const shareToKakao = () => {
+    if (!routine) {
+      console.warn("루틴 데이터가 없습니다.");
+      return;
+    }
+
+    try {
+      // 루틴 내용을 텍스트로 포맷팅
+      const routineText = `${routine.routineName}\n\n${
+        routine.description
+      }\n\n${routine.days
+        .map(
+          (day) =>
+            `${day.day} - ${day.focus}\n${day.exercises
+              .map((e) => `  ${e.name} ${e.sets}x${e.reps} (${e.rest})`)
+              .join("\n")}`
+        )
+        .join("\n\n")}`;
+
+      const Kakao = window.Kakao;
+
+      // 카카오톡 SDK가 초기화된 경우, 카카오톡 공유 API 사용
+      if (Kakao && Kakao.isInitialized()) {
+        try {
+          Kakao.Share.sendDefault({
+            objectType: "text",
+            text: routineText,
+          });
+          return;
+        } catch (kakaoError) {
+          console.warn("카카오톡 SDK 공유 실패, 링크 공유로 전환:", kakaoError);
+          // SDK 실패 시 링크 공유로 전환
+        }
+      }
+
+      // 카카오톡 링크 공유 URL 사용
+      const kakaoShareUrl = `https://talk.kakao.com/share?text=${encodeURIComponent(
+        routineText
+      )}`;
+
+      // 새 창에서 열기
+      window.open(kakaoShareUrl, "_blank", "width=600,height=700");
+    } catch (error) {
+      console.error("카카오톡 공유 실패:", error);
+      alert("카카오톡 공유에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -179,11 +301,15 @@ export function RoutineResults({ routine, isLoading, error, onReset }: RoutineRe
           <Loader2 className="h-16 w-16 animate-spin text-primary" />
         </div>
         <div className="flex flex-col items-center gap-1.5 text-center">
-          <h3 className="text-lg font-bold text-foreground">AI가 루틴을 생성 중입니다</h3>
-          <p className="text-sm text-muted-foreground">최적의 루틴을 만들고 있어요</p>
+          <h3 className="text-lg font-bold text-foreground">
+            AI가 루틴을 생성 중입니다
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            최적의 루틴을 만들고 있어요
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -200,17 +326,21 @@ export function RoutineResults({ routine, isLoading, error, onReset }: RoutineRe
           </button>
         </div>
       </div>
-    )
+    );
   }
 
-  if (!routine) return null
+  if (!routine) return null;
 
   return (
     <div className="flex flex-1 flex-col">
       {/* Header */}
       <div className="px-1 pb-5">
-        <h2 className="text-xl font-bold text-foreground">{routine.routineName}</h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{routine.description}</p>
+        <h2 className="text-xl font-bold text-foreground">
+          {routine.routineName}
+        </h2>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          {routine.description}
+        </p>
       </div>
 
       {/* Day Cards */}
@@ -228,7 +358,10 @@ export function RoutineResults({ routine, isLoading, error, onReset }: RoutineRe
           </h3>
           <ul className="flex flex-col gap-2">
             {routine.tips.map((tip, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-[13px] leading-relaxed text-foreground/80">
+              <li
+                key={i}
+                className="flex items-start gap-2.5 text-[13px] leading-relaxed text-foreground/80"
+              >
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
                 {tip}
               </li>
@@ -252,16 +385,29 @@ export function RoutineResults({ routine, isLoading, error, onReset }: RoutineRe
           {allCopied ? (
             <>
               <Check className="h-4 w-4" />
-              {'복사 완료!'}
+              {"복사 완료!"}
             </>
           ) : (
             <>
               <Copy className="h-4 w-4" />
-              {'전체 루틴 복사'}
+              {"전체 루틴 복사"}
             </>
           )}
         </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("카카오톡 공유 버튼 클릭");
+            shareToKakao();
+          }}
+          className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-[#FEE500] text-[#000000] transition-all active:scale-95 hover:bg-[#FEE500]/90 cursor-pointer"
+          title="카카오톡으로 공유"
+          type="button"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
       </div>
     </div>
-  )
+  );
 }

@@ -5,6 +5,7 @@ import {
   frequencyOptions,
   splitOptions,
   focusOptions,
+  experienceLevelOptions,
 } from "@/entities/equipment";
 import {
   ChevronLeft,
@@ -12,12 +13,14 @@ import {
   Calendar,
   LayoutGrid,
   Target,
+  User,
 } from "lucide-react";
 
 export interface WorkoutConfig {
   frequency: string;
   split: string;
   focus: string;
+  experienceLevel: string;
 }
 
 interface WorkoutSettingsProps {
@@ -192,6 +195,16 @@ export function WorkoutSettings({
           options={focusOptions}
           value={config.focus}
           onChange={(value) => onConfigChange({ ...config, focus: value })}
+        />
+
+        <OptionGroup
+          label="경험 수준"
+          icon={User}
+          options={experienceLevelOptions}
+          value={config.experienceLevel}
+          onChange={(value) =>
+            onConfigChange({ ...config, experienceLevel: value })
+          }
         />
       </div>
 

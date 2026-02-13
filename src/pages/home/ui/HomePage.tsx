@@ -24,6 +24,7 @@ export function HomePage() {
     frequency: "3",
     split: "3",
     focus: "lower",
+    experienceLevel: "beginner",
   });
   const [routine, setRoutine] = useState<RoutineData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,10 @@ export function HomePage() {
         frequency: workoutConfig.frequency,
         split: workoutConfig.split,
         focus: workoutConfig.focus,
+        experienceLevel: workoutConfig.experienceLevel as
+          | "beginner"
+          | "intermediate"
+          | "advanced",
       });
 
       setRoutine(result);
@@ -59,7 +64,12 @@ export function HomePage() {
   const handleReset = () => {
     setStep("landing");
     setSelectedEquipment([]);
-    setWorkoutConfig({ frequency: "3", split: "3", focus: "lower" });
+    setWorkoutConfig({
+      frequency: "3",
+      split: "3",
+      focus: "lower",
+      experienceLevel: "beginner",
+    });
     setRoutine(null);
   };
 
