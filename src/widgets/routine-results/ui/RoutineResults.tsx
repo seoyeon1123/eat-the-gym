@@ -226,8 +226,17 @@ export function RoutineResults({
         const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JS_KEY || "";
         if (KAKAO_JS_KEY) {
           Kakao.init(KAKAO_JS_KEY);
+          console.log("카카오톡 SDK 초기화 완료");
+        } else {
+          console.warn(
+            "카카오톡 JavaScript 키가 설정되지 않았습니다. .env 파일에 VITE_KAKAO_JS_KEY를 추가하세요."
+          );
         }
+      } else {
+        console.log("카카오톡 SDK 이미 초기화됨");
       }
+    } else {
+      console.warn("카카오톡 SDK를 로드할 수 없습니다.");
     }
   }, []);
 
@@ -252,6 +261,17 @@ export function RoutineResults({
       return;
     }
 
+    const Kakao = window.Kakao;
+
+    // 카카오톡 SDK 확인
+    if (!Kakao || !Kakao.isInitialized()) {
+      alert(
+        "카카오톡 공유 기능을 사용할 수 없습니다.\n개발 서버를 재시작한 후 다시 시도해주세요."
+      );
+      console.error("카카오톡 SDK가 초기화되지 않았습니다.");
+      return;
+    }
+
     try {
       // 루틴 내용을 텍스트로 포맷팅
       const routineText = `${routine.routineName}\n\n${
@@ -265,29 +285,16 @@ export function RoutineResults({
         )
         .join("\n\n")}`;
 
-      const Kakao = window.Kakao;
+      const currentUrl = window.location.href;
 
-      // 카카오톡 SDK가 초기화된 경우, 카카오톡 공유 API 사용
-      if (Kakao && Kakao.isInitialized()) {
-        try {
-          Kakao.Share.sendDefault({
-            objectType: "text",
-            text: routineText,
-          });
-          return;
-        } catch (kakaoError) {
-          console.warn("카카오톡 SDK 공유 실패, 링크 공유로 전환:", kakaoError);
-          // SDK 실패 시 링크 공유로 전환
-        }
-      }
-
-      // 카카오톡 링크 공유 URL 사용
-      const kakaoShareUrl = `https://talk.kakao.com/share?text=${encodeURIComponent(
-        routineText
-      )}`;
-
-      // 새 창에서 열기
-      window.open(kakaoShareUrl, "_blank", "width=600,height=700");
+      Kakao.Share.sendDefault({
+        objectType: "text",
+        text: routineText,
+        link: {
+          mobileWebUrl: currentUrl,
+          webUrl: currentUrl,
+        },
+      });
     } catch (error) {
       console.error("카카오톡 공유 실패:", error);
       alert("카카오톡 공유에 실패했습니다. 다시 시도해주세요.");
