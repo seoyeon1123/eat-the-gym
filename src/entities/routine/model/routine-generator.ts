@@ -1,4 +1,4 @@
-import { equipmentCategories, exercisesByCategory } from '@/entities/equipment'
+import {  exercisesByCategory } from '@/entities/equipment'
 import type { RoutineData, DayRoutine, Exercise } from '@/widgets/routine-results'
 
 interface GenerateInput {
