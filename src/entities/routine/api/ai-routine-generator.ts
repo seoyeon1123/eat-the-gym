@@ -12,10 +12,13 @@ interface GenerateInput {
 
 export type AIProvider = 'groq' | 'gemini' | 'openai' | 'claude' | 'together'
 
+export type CoachStyle = 'pt' | 'gymbro'
+
 interface AIConfig {
-  provider: AIProvider
-  apiKey: string
+  provider?: AIProvider
+  apiKey?: string
   model?: string
+  coachStyle?: CoachStyle
 }
 
 // ─────────────────────────────────────────────────────────
@@ -655,11 +658,16 @@ AI는 Day 구조를 채우는 역할만 합니다.
     }
   ],
   "tips": [
-    "점진적 과부하를 적용하세요",
-    "워밍업 필수",
-    "자세 우선"
+    "이 루틴에만 해당하는 구체적 조언 1",
+    "이 루틴에만 해당하는 구체적 조언 2",
+    "이 루틴에만 해당하는 구체적 조언 3"
   ]
 }
+
+tips 규칙 (필수):
+- 이번에 생성한 루틴의 Day 구조·부위·볼륨을 언급한 조언만 작성할 것.
+- "점진적 과부하", "워밍업 필수", "자세 우선", "휴식과 영양", "회복을 도우세요" 등 일반 문구 사용 금지.
+- 루틴마다 다른 내용이어야 함.
 
 반드시 유효한 JSON만 출력하세요.
 마크다운 코드 블록 사용 금지.
@@ -693,6 +701,260 @@ function parseAIResponse(content: Record<string, unknown>, input: GenerateInput)
     days,
     tips: (content.tips as string[]) || [],
   }
+}
+
+// ─────────────────────────────────────────────────────────
+//  코치 스타일 (PT / GymBro) — 같은 루틴, 다른 말투로 tips 생성
+// ─────────────────────────────────────────────────────────
+
+const COACH_RETRY_ATTEMPTS = 2
+const COACH_TEMPERATURE = 0.3
+const COACH_LENGTH_RULE = '각 tip은 2문장 이내로 작성하세요. 각 tip은 120자 이내.'
+
+/** 루틴 전체 대신 요약만 전달 (토큰 절약, 속도·안정성 상승) */
+function routineSummary(routine: RoutineData): string {
+  const lines = routine.days.map(
+    (d) => `Day ${d.day}: ${d.focus} (${d.exercises.length} exercises)`,
+  )
+  const totalDays = routine.days.length
+  const hasHeavyLower = routine.days.some(
+    (d) => d.focus.includes('하체') && d.exercises.length >= 5,
+  )
+  const notes: string[] = [`주 ${totalDays}회 루틴`]
+  if (hasHeavyLower) notes.push('하체 볼륨 높음')
+  return lines.join('\n') + '\n' + notes.join(', ')
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const out = [...arr]
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+      ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
+
+function buildCoachPromptPT(routine: RoutineData, input: GenerateInput): string {
+  return `
+당신은 경력 15년 이상의 전문 퍼스널 트레이너입니다.
+
+회원의 루틴을 보고
+차분하고 신뢰감 있게 코칭하세요.
+
+말투 규칙:
+- 과장 금지
+- 현실적인 조언
+- 부상 예방 강조
+- 회복 중요성 강조
+- 전문가처럼 설명
+- ${COACH_LENGTH_RULE}
+
+회원 정보:
+경험 수준: ${input.experienceLevel}
+중점 부위: ${input.focus}
+훈련 빈도: 주 ${input.frequency}회
+
+루틴 요약:
+${routineSummary(routine)}
+
+이 루틴 전용 맞춤 코칭을 작성하세요.
+일반적인 헬스 조언 금지.
+
+금지 문구 (절대 사용하지 마세요):
+"점진적 과부하", "워밍업 필수", "자세 우선", "휴식과 영양", "회복을 도우세요" 등 반복되는 일반 문구.
+대신 위 루틴의 Day·부위·운동 수·볼륨을 구체적으로 언급한 코칭만 작성하세요.
+
+JSON 형식만 출력:
+{
+  "tips": [
+    "코치 멘트",
+    "코치 멘트",
+    "코치 멘트"
+  ]
+}
+`.trim()
+}
+
+function buildCoachPromptGymBro(routine: RoutineData, input: GenerateInput): string {
+  return `
+당신은 운동에 미친 헬창 코치입니다.
+
+회원에게 동기부여하면서
+현실적인 조언을 합니다.
+
+말투 규칙:
+- 에너지 높음
+- 직설적
+- 성장 강조
+- 핑계 허용 안 함
+- 하지만 부상 경고는 반드시 포함
+- ${COACH_LENGTH_RULE}
+
+회원 정보:
+경험 수준: ${input.experienceLevel}
+중점 부위: ${input.focus}
+훈련 빈도: 주 ${input.frequency}회
+
+루틴 요약:
+${routineSummary(routine)}
+
+이 루틴을 보고 헬창 코치처럼 코칭하세요.
+반복 문장 금지.
+일반적인 조언 금지.
+
+금지 문구 (절대 사용하지 마세요):
+"점진적 과부하", "워밍업 필수", "자세 우선", "휴식과 영양", "회복을 도우세요" 등 반복되는 일반 문구.
+대신 위 루틴의 Day·부위·운동 수·볼륨을 구체적으로 언급한 코칭만 작성하세요.
+
+JSON 형식만 출력:
+{
+  "tips": [
+    "코치 멘트",
+    "코치 멘트",
+    "코치 멘트"
+  ]
+}
+`.trim()
+}
+
+function parseCoachTipsResponse(text: string): string[] {
+  let content: Record<string, unknown>
+  try {
+    content = JSON.parse(text)
+  } catch {
+    const jsonBlock = text.match(/\{[\s\S]*\}/)?.[0]
+    if (!jsonBlock) return []
+    try {
+      content = JSON.parse(jsonBlock)
+    } catch {
+      return []
+    }
+  }
+  const tips = content.tips
+  if (!Array.isArray(tips)) return []
+  return tips
+    .filter((t): t is string => typeof t === 'string')
+    .slice(0, 10)
+}
+
+async function callCoachAI(
+  prompt: string,
+  provider: AIProvider,
+  apiKey: string,
+  model?: string,
+): Promise<string> {
+  const system = '반드시 유효한 JSON만 응답하세요. tips 배열만 포함.'
+
+  if (provider === 'groq') {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: model || import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile',
+        messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
+        temperature: COACH_TEMPERATURE,
+      }),
+    })
+    if (!res.ok) throw new Error(`Groq API error: ${res.statusText}`)
+    const data = await res.json()
+    return data.choices?.[0]?.message?.content ?? ''
+  }
+
+  if (provider === 'openai') {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: model || import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini',
+        messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
+        temperature: COACH_TEMPERATURE,
+        response_format: { type: 'json_object' },
+      }),
+    })
+    if (!res.ok) throw new Error(`OpenAI API error: ${res.statusText}`)
+    const data = await res.json()
+    return data.choices?.[0]?.message?.content ?? ''
+  }
+
+  if (provider === 'gemini') {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `${system}\n\n${prompt}` }] }],
+          generationConfig: { temperature: COACH_TEMPERATURE, responseMimeType: 'application/json' },
+        }),
+      },
+    )
+    if (!res.ok) throw new Error(`Gemini API error: ${res.statusText}`)
+    const data = await res.json()
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+  }
+
+  if (provider === 'claude') {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: model || import.meta.env.VITE_CLAUDE_MODEL || 'claude-3-5-sonnet-20241022',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: COACH_TEMPERATURE,
+      }),
+    })
+    if (!res.ok) throw new Error(`Claude API error: ${res.statusText}`)
+    const data = await res.json()
+    return data.content?.[0]?.text ?? ''
+  }
+
+  if (provider === 'together') {
+    const res = await fetch('https://api.together.xyz/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model: 'meta-llama/Llama-3-70b-chat-hf',
+        messages: [{ role: 'system', content: system }, { role: 'user', content: prompt }],
+        temperature: COACH_TEMPERATURE,
+        response_format: { type: 'json_object' },
+      }),
+    })
+    if (!res.ok) throw new Error(`Together API error: ${res.statusText}`)
+    const data = await res.json()
+    return data.choices?.[0]?.message?.content ?? ''
+  }
+
+  return ''
+}
+
+async function fetchCoachTips(
+  routine: RoutineData,
+  input: GenerateInput,
+  coachStyle: CoachStyle,
+  provider: AIProvider,
+  apiKey: string,
+  model?: string,
+): Promise<string[]> {
+  const prompt =
+    coachStyle === 'pt'
+      ? buildCoachPromptPT(routine, input)
+      : buildCoachPromptGymBro(routine, input)
+  let lastError: Error | null = null
+  for (let attempt = 0; attempt < COACH_RETRY_ATTEMPTS; attempt++) {
+    try {
+      const text = await callCoachAI(prompt, provider, apiKey, model)
+      const tips = parseCoachTipsResponse(text)
+      if (tips.length > 0) return tips
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e))
+      if (attempt < COACH_RETRY_ATTEMPTS - 1) {
+        console.warn(`[AI] Coach tips 시도 ${attempt + 1}/${COACH_RETRY_ATTEMPTS} 실패, 재시도...`, e)
+      }
+    }
+  }
+  if (lastError) console.warn('[AI] Coach tips 재시도 모두 실패', lastError)
+  return routine.tips.length > 0 ? shuffle([...routine.tips]) : routine.tips
 }
 
 // ─────────────────────────────────────────────────────────
@@ -732,6 +994,7 @@ export async function generateRoutineWithAI(
     ? [primaryProvider, ...fallbackProviders.filter((p) => p !== primaryProvider)]
     : [primaryProvider, ...fallbackProviders]
 
+  const coachStyle = (config?.coachStyle ?? import.meta.env.VITE_COACH_STYLE ?? 'pt') as CoachStyle
   let lastError: Error | null = null
 
   for (const provider of providers) {
@@ -741,16 +1004,40 @@ export async function generateRoutineWithAI(
       else if (provider === 'groq' && import.meta.env.VITE_GROQ_API_KEY) providerApiKey = import.meta.env.VITE_GROQ_API_KEY
       else if (provider === 'gemini' && import.meta.env.VITE_GEMINI_API_KEY) providerApiKey = import.meta.env.VITE_GEMINI_API_KEY
 
+      if (!providerApiKey) continue
+
       console.log(`[AI] ${provider}로 루틴 생성 시도 중...`)
 
+      let r: RoutineData
       switch (provider) {
-        case 'groq': return await generateWithGroq(input, providerApiKey, config?.model)
-        case 'openai': return await generateWithOpenAI(input, providerApiKey, config?.model)
-        case 'claude': return await generateWithClaude(input, providerApiKey, config?.model)
-        case 'gemini': return await generateWithGemini(input, providerApiKey)
-        case 'together': return await generateWithTogether(input, providerApiKey)
-        default: continue
+        case 'groq':
+          r = await generateWithGroq(input, providerApiKey, config?.model)
+          break
+        case 'openai':
+          r = await generateWithOpenAI(input, providerApiKey, config?.model)
+          break
+        case 'claude':
+          r = await generateWithClaude(input, providerApiKey, config?.model)
+          break
+        case 'gemini':
+          r = await generateWithGemini(input, providerApiKey)
+          break
+        case 'together':
+          r = await generateWithTogether(input, providerApiKey)
+          break
+        default:
+          continue
       }
+
+      if (coachStyle === 'pt' || coachStyle === 'gymbro') {
+        try {
+          r.tips = await fetchCoachTips(r, input, coachStyle, provider, providerApiKey, config?.model)
+          console.log(`[AI] 코치 스타일 "${coachStyle}" tips 적용됨`)
+        } catch (e) {
+          console.warn('[AI] Coach tips 실패, 루틴 기본 tips 유지', e)
+        }
+      }
+      return r
     } catch (error) {
       console.error(`[AI] ${provider} 실패:`, error)
       lastError = error instanceof Error ? error : new Error(String(error))
