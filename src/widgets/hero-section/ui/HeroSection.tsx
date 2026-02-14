@@ -80,7 +80,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
         <div className="flex flex-col items-center gap-4 text-center">
           <h1
             className="text-[3.25rem] font-black tracking-[-0.03em] text-white sm:text-[4rem]"
-            style={{ fontFeatureSettings: "'ss01' on" }}
+            style={{ fontFamily: "'Hahmlet', serif" }}
           >
             헬스장{' '}
             <span className="bg-gradient-to-r from-emerald-400 via-primary to-emerald-300 bg-clip-text text-transparent">
