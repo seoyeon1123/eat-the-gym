@@ -1,5 +1,6 @@
 import type { RoutineData, DayRoutine } from '@/widgets/routine-results'
 import { exercisesByCategory } from '@/entities/equipment'
+import { generateRoutine as generateRoutineLocal } from '../model/routine-generator'
 
 interface GenerateInput {
   selectedEquipment: string[]
@@ -24,7 +25,7 @@ interface AIConfig {
 async function generateWithGroq(input: GenerateInput, apiKey: string, model?: string): Promise<RoutineData> {
   const prompt = buildPrompt(input)
   const selectedModel = model || import.meta.env.VITE_GROQ_MODEL || 'llama-3.3-70b-versatile'
-  
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -57,7 +58,7 @@ async function generateWithGroq(input: GenerateInput, apiKey: string, model?: st
 async function generateWithOpenAI(input: GenerateInput, apiKey: string, model?: string): Promise<RoutineData> {
   const prompt = buildPrompt(input)
   const selectedModel = model || import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
-  
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -91,7 +92,7 @@ async function generateWithOpenAI(input: GenerateInput, apiKey: string, model?: 
 async function generateWithClaude(input: GenerateInput, apiKey: string, model?: string): Promise<RoutineData> {
   const prompt = buildPrompt(input)
   const selectedModel = model || import.meta.env.VITE_CLAUDE_MODEL || 'claude-3-5-sonnet-20241022'
-  
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -124,7 +125,7 @@ async function generateWithClaude(input: GenerateInput, apiKey: string, model?: 
 
 async function generateWithGemini(input: GenerateInput, apiKey: string): Promise<RoutineData> {
   const prompt = buildPrompt(input)
-  
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await fetch(
@@ -160,7 +161,7 @@ async function generateWithGemini(input: GenerateInput, apiKey: string): Promise
 
 async function generateWithTogether(input: GenerateInput, apiKey: string): Promise<RoutineData> {
   const prompt = buildPrompt(input)
-  
+
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const response = await fetch('https://api.together.xyz/v1/chat/completions', {
@@ -403,7 +404,7 @@ function buildSplitDayPlan(
 const EXPERIENCE_CONFIG = {
   beginner: {
     label: '초보',
-    baseCount: '3~4',
+    baseCount: '5~6',
     setRange: '3세트',
     focusSet: '4세트',
     compoundLimit: 1,
@@ -716,7 +717,14 @@ export async function generateRoutineWithAI(
     import.meta.env.VITE_GROQ_API_KEY
 
   if (!hasAnyKey) {
-    throw new Error('AI API 키가 설정되지 않았습니다. VITE_AI_API_KEY 또는 각 제공자별 API 키를 설정하세요.')
+    // API 키 없으면 로컬 루틴 생성으로 폴백 (AI_SETUP.md 안내와 동일)
+    const goal = input.experienceLevel === 'beginner' ? 'beginner' : 'hypertrophy'
+    return generateRoutineLocal({
+      selectedEquipment: input.selectedEquipment,
+      frequency: input.frequency,
+      split: input.split,
+      goal,
+    })
   }
 
   const fallbackProviders: AIProvider[] = ['gemini', 'openai', 'groq']

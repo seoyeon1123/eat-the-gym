@@ -1,23 +1,24 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import type { Root } from 'react-dom/client'
-import { HomePage } from '@/pages/home'
-import '../styles/index.css'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import type { Root } from 'react-dom/client';
+import '@/shared/config/firebase'; // Firebase 초기화 (Analytics 등 사용)
+import { HomePage } from '@/pages/home';
+import '../styles/index.css';
 
 export function initApp(): Root {
-  const rootElement = document.getElementById('root')
-  
+  const rootElement = document.getElementById('root');
+
   if (!rootElement) {
-    throw new Error('Root element not found')
+    throw new Error('Root element not found');
   }
 
-  const root = createRoot(rootElement)
-  
+  const root = createRoot(rootElement);
+
   root.render(
     <StrictMode>
       <HomePage />
     </StrictMode>
-  )
+  );
 
-  return root
+  return root;
 }
