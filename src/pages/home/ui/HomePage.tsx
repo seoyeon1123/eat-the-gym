@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import { HeroSection } from "@/widgets/hero-section";
-import { StepIndicator } from "@/widgets/step-indicator";
-import { EquipmentSelector } from "@/widgets/equipment-selector";
+import { useState, useCallback } from 'react';
+import { HeroSection } from '@/widgets/hero-section';
+import { StepIndicator } from '@/widgets/step-indicator';
+import { EquipmentSelector } from '@/widgets/equipment-selector';
 import {
   WorkoutSettings,
   type WorkoutConfig,
-} from "@/widgets/workout-settings";
-import { RoutineResults, type RoutineData } from "@/widgets/routine-results";
-import { AiTrainerChat } from "@/widgets/ai-trainer-chat";
-import { generateRoutineWithAI } from "@/entities/routine/api";
-import { Dumbbell, MessageCircle } from "lucide-react";
+} from '@/widgets/workout-settings';
+import { RoutineResults, type RoutineData } from '@/widgets/routine-results';
+import { AiTrainerChat } from '@/widgets/ai-trainer-chat';
+import { generateRoutineWithAI } from '@/entities/routine/api';
+import { Dumbbell, MessageCircle } from 'lucide-react';
 
-type AppStep = "landing" | "equipment" | "settings" | "results";
+type AppStep = 'landing' | 'equipment' | 'settings' | 'results';
 
-const stepLabels = ["기구 선택", "운동 설정", "결과"];
+const stepLabels = ['기구 선택', '운동 설정', '결과'];
 
 export function HomePage() {
-  const [step, setStep] = useState<AppStep>("landing");
+  const [step, setStep] = useState<AppStep>('landing');
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
   const [workoutConfig, setWorkoutConfig] = useState<WorkoutConfig>({
-    frequency: "3",
-    split: "3",
-    focus: "lower",
-    experienceLevel: "beginner",
+    frequency: '6',
+    split: '3',
+    focus: 'lower',
+    experienceLevel: 'beginner',
   });
   const [routine, setRoutine] = useState<RoutineData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,7 @@ export function HomePage() {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   const handleGenerate = useCallback(async () => {
-    setStep("results");
+    setStep('results');
     setIsLoading(true);
     setRoutine(null);
     setError(null);
@@ -45,16 +45,16 @@ export function HomePage() {
         split: workoutConfig.split,
         focus: workoutConfig.focus,
         experienceLevel: workoutConfig.experienceLevel as
-          | "beginner"
-          | "intermediate"
-          | "advanced",
+          | 'beginner'
+          | 'intermediate'
+          | 'advanced',
       });
 
       setRoutine(result);
     } catch (err) {
-      console.error("AI 루틴 생성 실패:", err);
+      console.error('AI 루틴 생성 실패:', err);
       setError(
-        err instanceof Error ? err.message : "AI 루틴 생성에 실패했습니다."
+        err instanceof Error ? err.message : 'AI 루틴 생성에 실패했습니다.'
       );
     } finally {
       setIsLoading(false);
@@ -62,35 +62,35 @@ export function HomePage() {
   }, [selectedEquipment, workoutConfig]);
 
   const handleReset = () => {
-    setStep("landing");
+    setStep('landing');
     setSelectedEquipment([]);
     setWorkoutConfig({
-      frequency: "3",
-      split: "3",
-      focus: "lower",
-      experienceLevel: "beginner",
+      frequency: '3',
+      split: '3',
+      focus: 'lower',
+      experienceLevel: 'beginner',
     });
     setRoutine(null);
   };
 
   const getStepNumber = () => {
     switch (step) {
-      case "equipment":
+      case 'equipment':
         return 1;
-      case "settings":
+      case 'settings':
         return 2;
-      case "results":
+      case 'results':
         return 3;
       default:
         return 0;
     }
   };
 
-  if (step === "landing") {
+  if (step === 'landing') {
     return (
       <>
         <main className="relative min-h-dvh">
-          <HeroSection onStart={() => setStep("equipment")} />
+          <HeroSection onStart={() => setStep('equipment')} />
         </main>
 
         {/* Floating AI trainer button */}
@@ -121,8 +121,8 @@ export function HomePage() {
               >
                 <Dumbbell className="h-4 w-4 text-primary" />
                 <span className="text-sm font-bold text-foreground">
-                  {"헬스장 "}
-                  <span className="text-primary">{"파먹기"}</span>
+                  {'헬스장 '}
+                  <span className="text-primary">{'파먹기'}</span>
                 </span>
               </button>
               <span className="text-xs text-muted-foreground">
@@ -144,24 +144,24 @@ export function HomePage() {
             key={step}
             className="flex flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200"
           >
-            {step === "equipment" && (
+            {step === 'equipment' && (
               <EquipmentSelector
                 selected={selectedEquipment}
                 onSelectionChange={setSelectedEquipment}
-                onNext={() => setStep("settings")}
+                onNext={() => setStep('settings')}
               />
             )}
 
-            {step === "settings" && (
+            {step === 'settings' && (
               <WorkoutSettings
                 config={workoutConfig}
                 onConfigChange={setWorkoutConfig}
                 onNext={handleGenerate}
-                onBack={() => setStep("equipment")}
+                onBack={() => setStep('equipment')}
               />
             )}
 
-            {step === "results" && (
+            {step === 'results' && (
               <RoutineResults
                 routine={routine}
                 isLoading={isLoading}

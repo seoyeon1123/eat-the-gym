@@ -34,7 +34,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
   };
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-between overflow-hidden bg-[#0a0a0a] px-6 pb-10 pt-12 safe-bottom">
+    <div className="relative flex min-h-dvh flex-col items-center justify-between overflow-hidden bg-[#0a0a0a] px-6 pb-24 pt-12 safe-bottom sm:pb-10">
       {/* Subtle radial noise overlay */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.025]"
@@ -57,7 +57,7 @@ export function HeroSection({ onStart }: HeroSectionProps) {
       </div>
 
       {/* ── Content ── */}
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-12">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-10">
         {/* Logo — bare, centered, no card */}
         <div className="relative flex items-center justify-center">
           {/* faint halo behind logo only */}

@@ -1,12 +1,13 @@
-"use client";
+'use client';
 
-import { cn } from "@/shared/lib";
+import { cn } from '@/shared/lib';
 import {
   frequencyOptions,
   splitOptions,
   focusOptions,
   experienceLevelOptions,
-} from "@/entities/equipment";
+  getFrequencyOptionsForSplit,
+} from '@/entities/equipment';
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,7 +15,7 @@ import {
   LayoutGrid,
   Target,
   User,
-} from "lucide-react";
+} from 'lucide-react';
 
 export interface WorkoutConfig {
   frequency: string;
@@ -36,12 +37,14 @@ function SliderOption({
   options,
   value,
   onChange,
+  recommendLabel,
 }: {
   label: string;
   icon: React.ElementType;
   options: { value: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
+  recommendLabel?: string;
 }) {
   const currentIndex = options.findIndex((opt) => opt.value === value);
   const sliderValue = currentIndex >= 0 ? currentIndex : 0;
@@ -50,6 +53,10 @@ function SliderOption({
     const newIndex = parseInt(e.target.value);
     onChange(options[newIndex].value);
   };
+
+  const recommendText = recommendLabel
+    ? `* ${recommendLabel.replace(/ 추천$/, '를 추천합니다')}`
+    : null;
 
   return (
     <div className="flex flex-col gap-3">
@@ -83,8 +90,8 @@ function SliderOption({
             <span
               key={option.value}
               className={cn(
-                "text-base font-semibold",
-                index === sliderValue ? "text-primary" : "text-muted-foreground"
+                'text-base font-semibold',
+                index === sliderValue ? 'text-primary' : 'text-muted-foreground'
               )}
             >
               {index + 1}
@@ -92,6 +99,9 @@ function SliderOption({
           ))}
         </div>
       </div>
+      {recommendText && (
+        <p className="text-xs text-muted-foreground px-1">{recommendText}</p>
+      )}
     </div>
   );
 }
@@ -124,10 +134,10 @@ function OptionGroup({
               key={option.value}
               onClick={() => onChange(option.value)}
               className={cn(
-                "shrink-0 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95",
+                'shrink-0 rounded-xl px-2 py-2 text-sm font-semibold transition-all active:scale-95',
                 value === option.value
-                  ? "bg-foreground text-background"
-                  : "bg-card text-muted-foreground ring-1 ring-border active:bg-secondary"
+                  ? 'bg-foreground text-background'
+                  : 'bg-card text-muted-foreground ring-1 ring-border active:bg-secondary'
               )}
             >
               {option.label}
@@ -141,10 +151,10 @@ function OptionGroup({
               key={option.value}
               onClick={() => onChange(option.value)}
               className={cn(
-                "rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-95",
+                'rounded-xl px-4 py-2.5 text-sm font-semibold transition-all active:scale-95',
                 value === option.value
-                  ? "bg-foreground text-background"
-                  : "bg-card text-muted-foreground ring-1 ring-border active:bg-secondary"
+                  ? 'bg-foreground text-background'
+                  : 'bg-card text-muted-foreground ring-1 ring-border active:bg-secondary'
               )}
             >
               {option.label}
@@ -173,20 +183,33 @@ export function WorkoutSettings({
       </div>
 
       <div className="flex flex-1 flex-col gap-8">
+        <OptionGroup
+          label="분할 방식"
+          icon={LayoutGrid}
+          options={splitOptions}
+          value={config.split}
+          onChange={(value) => {
+            const { options: recommendedOptions } =
+              getFrequencyOptionsForSplit(value);
+            const recommendedFrequency =
+              recommendedOptions[0]?.value ?? config.frequency;
+            onConfigChange({
+              ...config,
+              split: value,
+              frequency: recommendedFrequency,
+            });
+          }}
+        />
+
         <SliderOption
           label="운동 빈도"
           icon={Calendar}
           options={frequencyOptions}
           value={config.frequency}
           onChange={(value) => onConfigChange({ ...config, frequency: value })}
-        />
-
-        <OptionGroup
-          label="분할 방식"
-          icon={LayoutGrid}
-          options={splitOptions}
-          value={config.split}
-          onChange={(value) => onConfigChange({ ...config, split: value })}
+          recommendLabel={
+            getFrequencyOptionsForSplit(config.split).recommendLabel
+          }
         />
 
         <OptionGroup

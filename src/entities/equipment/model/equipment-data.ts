@@ -169,6 +169,27 @@ export const splitOptions = [
   { value: '5', label: '5분할' },
 ]
 
+/** 분할별 추천 운동 빈도: 선택 가능한 주 N회 + 추천 문구 */
+export const frequencyBySplit: Record<
+  string,
+  { values: string[]; recommendLabel: string }
+> = {
+  '0': { values: ['2', '3'], recommendLabel: '주 2-3회 추천' },
+  '2': { values: ['4', '5'], recommendLabel: '주 4-5회 추천' },
+  '3': { values: ['6'], recommendLabel: '주 6회 추천' },
+  '4': { values: ['4'], recommendLabel: '주 4회 추천' },
+  '5': { values: ['5'], recommendLabel: '주 5회 추천' },
+}
+
+export function getFrequencyOptionsForSplit(split: string): {
+  options: { value: string; label: string }[]
+  recommendLabel: string
+} {
+  const { values, recommendLabel } = frequencyBySplit[split] ?? frequencyBySplit['3']
+  const options = frequencyOptions.filter((opt) => values.includes(opt.value))
+  return { options, recommendLabel }
+}
+
 export const focusOptions = [
   { value: 'lower', label: '하체' },
   { value: 'upper', label: '상체' },
