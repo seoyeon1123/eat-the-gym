@@ -461,6 +461,7 @@ function buildPrompt(input: GenerateInput): string {
   }
 
   const focusKr = focusLabel[focus] ?? focus
+  const isGlutesFocus = focus === 'glutes'
 
   const cycleNote =
     frequencyNum > cycleLength
@@ -507,6 +508,12 @@ ${dayPlanText}
 
 ★ 중점 부위 Day:
 해당 부위 운동 1~2개 추가 + 세트 1개 추가
+${isGlutesFocus ? `
+★ 둔근(엉덩이) 중점일 때 (필수):
+- 하체 Day에는 둔근 강조 운동을 우선 배치하세요.
+- 추천: 힙 쓰러스트, 런지, 루마니안 데드리프트, 글루트 브릿지, 스쿼트(넓은 스탠스/스모 스쿼트 변형) 등.
+- 하체 Day가 2일 이상이면: 최소 1일은 둔근 중심(힙 쓰러스트 + 런지/RDL 등)으로 구성하고, 나머지는 쿼드·햄스트링 균형 가능.
+- 사용자가 선택한 하체 기구 목록 안에서 위 운동들이 있으면 반드시 포함하세요.` : ''}
 
 ═══════════════════════════════════════
   작성 규칙

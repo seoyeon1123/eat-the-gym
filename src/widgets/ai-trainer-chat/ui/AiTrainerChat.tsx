@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { X, Send, MessageCircle } from "lucide-react";
+import { useState } from 'react';
+import { X, Send, MessageCircle } from 'lucide-react';
 
-import { askTrainerWithAI, type TrainerMessage } from "@/entities/trainer/api";
+import { askTrainerWithAI, type TrainerMessage } from '@/entities/trainer/api';
 
 interface AiTrainerChatProps {
   open: boolean;
@@ -16,7 +16,7 @@ interface ChatMessage extends TrainerMessage {
 
 export function AiTrainerChat({ open, onOpenChange }: AiTrainerChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,16 +31,16 @@ export function AiTrainerChat({ open, onOpenChange }: AiTrainerChatProps) {
 
     const newUserMessage: ChatMessage = {
       id: crypto.randomUUID(),
-      role: "user",
+      role: 'user',
       content: trimmed,
     };
 
     const historyForApi: TrainerMessage[] = [...messages, newUserMessage].map(
-      ({ role, content }) => ({ role, content }),
+      ({ role, content }) => ({ role, content })
     );
 
     setMessages((prev) => [...prev, newUserMessage]);
-    setInput("");
+    setInput('');
     setIsLoading(true);
     setError(null);
 
@@ -48,16 +48,16 @@ export function AiTrainerChat({ open, onOpenChange }: AiTrainerChatProps) {
       const answer = await askTrainerWithAI(trimmed, historyForApi);
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
-        role: "assistant",
+        role: 'assistant',
         content: answer,
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
-      console.error("AI 트레이너 응답 실패:", err);
+      console.error('AI 트레이너 응답 실패:', err);
       setError(
         err instanceof Error
           ? err.message
-          : "AI 헬스 트레이너 응답 중 오류가 발생했습니다.",
+          : 'AI 트레이너 응답 중 오류가 발생했습니다.'
       );
     } finally {
       setIsLoading(false);
@@ -77,7 +77,7 @@ export function AiTrainerChat({ open, onOpenChange }: AiTrainerChatProps) {
             </div>
             <div className="flex flex-col">
               <span className="text-xs font-semibold tracking-wide text-white/90">
-                AI 헬스 트레이너
+                AI 트레이너
               </span>
               <span className="text-[0.65rem] text-emerald-200/80">
                 운동 · 통증 · 자세에 대해 뭐든 물어보세요
@@ -109,14 +109,14 @@ export function AiTrainerChat({ open, onOpenChange }: AiTrainerChatProps) {
             <div
               key={m.id}
               className={`flex ${
-                m.role === "user" ? "justify-end" : "justify-start"
+                m.role === 'user' ? 'justify-end' : 'justify-start'
               }`}
             >
               <div
                 className={`max-w-[80%] rounded-2xl px-3 py-2 leading-relaxed ${
-                  m.role === "user"
-                    ? "bg-emerald-500 text-emerald-950"
-                    : "bg-white/4 text-white/90"
+                  m.role === 'user'
+                    ? 'bg-emerald-500 text-emerald-950'
+                    : 'bg-white/4 text-white/90'
                 }`}
               >
                 {m.content}
@@ -167,4 +167,3 @@ export function AiTrainerChat({ open, onOpenChange }: AiTrainerChatProps) {
     </div>
   );
 }
-

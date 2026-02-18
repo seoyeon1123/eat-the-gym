@@ -99,7 +99,7 @@ export function HomePage() {
           className="fixed bottom-5 right-5 z-50 flex h-11 items-center gap-2 rounded-full bg-[#111827] px-4 text-xs font-semibold text-white/90 shadow-[0_10px_35px_rgba(0,0,0,0.65)] ring-1 ring-white/10 backdrop-blur-md active:scale-95"
         >
           <MessageCircle className="h-4 w-4 text-emerald-400" />
-          <span>AI 헬스 트레이너</span>
+          <span>AI 트레이너</span>
         </button>
 
         <AiTrainerChat open={isChatOpen} onOpenChange={setIsChatOpen} />
@@ -179,7 +179,7 @@ export function HomePage() {
         className="fixed bottom-5 right-5 z-50 flex h-11 items-center gap-2 rounded-full bg-[#111827] px-4 text-xs font-semibold text-white/90 shadow-[0_10px_35px_rgba(0,0,0,0.65)] ring-1 ring-white/10 backdrop-blur-md active:scale-95"
       >
         <MessageCircle className="h-4 w-4 text-emerald-400" />
-        <span>AI 헬스 트레이너</span>
+        <span>AI 트레이너</span>
       </button>
 
       <AiTrainerChat open={isChatOpen} onOpenChange={setIsChatOpen} />

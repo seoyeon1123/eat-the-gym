@@ -1,16 +1,8 @@
-"use client";
+'use client';
 
-import { cn } from "@/shared/lib";
-import {
-  Copy,
-  RotateCcw,
-  Check,
-  Loader2,
-  Timer,
-  Repeat,
-  Share2,
-} from "lucide-react";
-import { useState, useEffect } from "react";
+import { cn } from '@/shared/lib';
+import { Copy, RotateCcw, Check, Loader2, Repeat, Share2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 // 카카오톡 SDK 타입 정의
 declare global {
@@ -85,41 +77,63 @@ function ExerciseRow({
     return { name, type: null };
   };
 
-  const { name: exerciseName, type } = extractType(exercise.name);
+  // "[부위]" 괄호 부분 분리 → 한글 폰트 깨짐 방지
+  const parseNameAndPart = (
+    rawName: string
+  ): { name: string; part: string | null } => {
+    const partMatch = rawName.match(/\s*\[([^\]]+)\]$/);
+    if (partMatch) {
+      return {
+        name: rawName.slice(0, rawName.length - partMatch[0].length).trim(),
+        part: partMatch[1].trim(),
+      };
+    }
+    return { name: rawName, part: null };
+  };
+
+  const { name: nameAfterType, type } = extractType(exercise.name);
+  const { name: exerciseName, part: bodyPart } =
+    parseNameAndPart(nameAfterType);
   const displayType = type || exercise.type;
 
   const typeLabels: Record<string, string> = {
-    머신: "머신",
-    바벨: "바벨",
-    덤벨: "덤벨",
-    machine: "머신",
-    barbell: "바벨",
-    dumbbell: "덤벨",
+    머신: '머신',
+    바벨: '바벨',
+    덤벨: '덤벨',
+    machine: '머신',
+    barbell: '바벨',
+    dumbbell: '덤벨',
   };
 
   return (
     <div className="flex items-center gap-3 px-1 py-2">
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-secondary text-[11px] font-bold text-muted-foreground">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-secondary text-[10px] font-bold text-muted-foreground">
         {index + 1}
       </span>
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-foreground">{exerciseName}</p>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-xs font-medium text-foreground antialiased break-words">
+            {exerciseName}
+            {bodyPart != null && (
+              <>
+                {' '}
+                <span className="text-muted-foreground font-normal">
+                  [{bodyPart}]
+                </span>
+              </>
+            )}
+          </p>
           {displayType && (
-            <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-semibold text-primary">
+            <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[9px] font-semibold text-primary">
               {typeLabels[displayType] || displayType}
             </span>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
         <span className="flex items-center gap-1">
           <Repeat className="h-3 w-3" />
           {exercise.sets}x{exercise.reps}
-        </span>
-        <span className="flex items-center gap-1">
-          <Timer className="h-3 w-3" />
-          {exercise.rest}
         </span>
       </div>
     </div>
@@ -140,18 +154,18 @@ function DayCard({
       dayRoutine.focus
     }\n${dayRoutine.exercises
       .map((e) => `${e.name} ${e.sets}x${e.reps} (${e.rest})`)
-      .join("\n")}`;
+      .join('\n')}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const dayColors = [
-    "from-primary/15 to-primary/5",
-    "from-primary/10 to-transparent",
-    "from-primary/8 to-transparent",
-    "from-primary/6 to-transparent",
-    "from-primary/5 to-transparent",
+    'from-primary/15 to-primary/5',
+    'from-primary/10 to-transparent',
+    'from-primary/8 to-transparent',
+    'from-primary/6 to-transparent',
+    'from-primary/5 to-transparent',
   ];
 
   return (
@@ -159,19 +173,21 @@ function DayCard({
       {/* Day header with gradient */}
       <div
         className={cn(
-          "flex items-center justify-between bg-gradient-to-r px-4 py-3",
+          'flex items-center justify-between bg-gradient-to-r px-4 py-3',
           dayColors[index % dayColors.length]
         )}
       >
         <div>
-          <h3 className="text-[15px] font-bold text-foreground">
+          <h3 className="text-[14px] font-bold text-foreground">
             {dayRoutine.day}
           </h3>
-          <p className="text-xs font-medium text-primary">{dayRoutine.focus}</p>
+          <p className="text-[11px] font-medium text-primary">
+            {dayRoutine.focus}
+          </p>
         </div>
         <button
           onClick={copyToClipboard}
-          className="flex items-center gap-1.5 rounded-lg bg-background/50 px-2.5 py-1.5 text-xs text-muted-foreground transition-all active:scale-95"
+          className="flex items-center gap-1.5 rounded-lg bg-background/50 px-2.5 py-1.5 text-[11px] text-muted-foreground transition-all active:scale-95"
         >
           {copied ? (
             <>
@@ -196,10 +212,10 @@ function DayCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-border/50 px-4 py-2.5">
-        <span className="text-[11px] font-medium text-muted-foreground">
+        <span className="text-[10px] font-medium text-muted-foreground">
           {dayRoutine.exercises.length}개 운동
         </span>
-        <span className="text-[11px] font-medium text-muted-foreground">
+        <span className="text-[10px] font-medium text-muted-foreground">
           총 {dayRoutine.exercises.reduce((acc, e) => acc + e.sets, 0)} 세트
         </span>
       </div>
@@ -217,26 +233,26 @@ export function RoutineResults({
 
   // 카카오톡 SDK 초기화
   useEffect(() => {
-    if (typeof window !== "undefined" && window.Kakao) {
+    if (typeof window !== 'undefined' && window.Kakao) {
       const Kakao = window.Kakao;
       if (!Kakao.isInitialized()) {
         // ⚠️ 중요: REST API 키가 아닌 JavaScript 키를 사용해야 합니다!
         // 카카오 개발자 콘솔 > 앱 설정 > 앱 키 > JavaScript 키를 복사하세요.
         // .env 파일에 VITE_KAKAO_JS_KEY=your_javascript_key_here 형식으로 추가하세요.
-        const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JS_KEY || "";
+        const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JS_KEY || '';
         if (KAKAO_JS_KEY) {
           Kakao.init(KAKAO_JS_KEY);
-          console.log("카카오톡 SDK 초기화 완료");
+          console.log('카카오톡 SDK 초기화 완료');
         } else {
           console.warn(
-            "카카오톡 JavaScript 키가 설정되지 않았습니다. .env 파일에 VITE_KAKAO_JS_KEY를 추가하세요."
+            '카카오톡 JavaScript 키가 설정되지 않았습니다. .env 파일에 VITE_KAKAO_JS_KEY를 추가하세요.'
           );
         }
       } else {
-        console.log("카카오톡 SDK 이미 초기화됨");
+        console.log('카카오톡 SDK 이미 초기화됨');
       }
     } else {
-      console.warn("카카오톡 SDK를 로드할 수 없습니다.");
+      console.warn('카카오톡 SDK를 로드할 수 없습니다.');
     }
   }, []);
 
@@ -247,9 +263,9 @@ export function RoutineResults({
         (day) =>
           `${day.day} - ${day.focus}\n${day.exercises
             .map((e) => `  ${e.name} ${e.sets}x${e.reps} (${e.rest})`)
-            .join("\n")}`
+            .join('\n')}`
       )
-      .join("\n\n");
+      .join('\n\n');
     navigator.clipboard.writeText(text);
     setAllCopied(true);
     setTimeout(() => setAllCopied(false), 2000);
@@ -257,7 +273,7 @@ export function RoutineResults({
 
   const shareToKakao = () => {
     if (!routine) {
-      console.warn("루틴 데이터가 없습니다.");
+      console.warn('루틴 데이터가 없습니다.');
       return;
     }
 
@@ -266,9 +282,9 @@ export function RoutineResults({
     // 카카오톡 SDK 확인
     if (!Kakao || !Kakao.isInitialized()) {
       alert(
-        "카카오톡 공유 기능을 사용할 수 없습니다.\n개발 서버를 재시작한 후 다시 시도해주세요."
+        '카카오톡 공유 기능을 사용할 수 없습니다.\n개발 서버를 재시작한 후 다시 시도해주세요.'
       );
-      console.error("카카오톡 SDK가 초기화되지 않았습니다.");
+      console.error('카카오톡 SDK가 초기화되지 않았습니다.');
       return;
     }
 
@@ -281,14 +297,14 @@ export function RoutineResults({
           (day) =>
             `${day.day} - ${day.focus}\n${day.exercises
               .map((e) => `  ${e.name} ${e.sets}x${e.reps} (${e.rest})`)
-              .join("\n")}`
+              .join('\n')}`
         )
-        .join("\n\n")}`;
+        .join('\n\n')}`;
 
       const currentUrl = window.location.href;
 
       Kakao.Share.sendDefault({
-        objectType: "text",
+        objectType: 'text',
         text: routineText,
         link: {
           mobileWebUrl: currentUrl,
@@ -296,8 +312,8 @@ export function RoutineResults({
         },
       });
     } catch (error) {
-      console.error("카카오톡 공유 실패:", error);
-      alert("카카오톡 공유에 실패했습니다. 다시 시도해주세요.");
+      console.error('카카오톡 공유 실패:', error);
+      alert('카카오톡 공유에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -308,10 +324,10 @@ export function RoutineResults({
           <Loader2 className="h-16 w-16 animate-spin text-primary" />
         </div>
         <div className="flex flex-col items-center gap-1.5 text-center">
-          <h3 className="text-lg font-bold text-foreground">
+          <h3 className="text-base font-bold text-foreground">
             AI가 루틴을 생성 중입니다
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             최적의 루틴을 만들고 있어요
           </p>
         </div>
@@ -323,11 +339,13 @@ export function RoutineResults({
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-5 py-24">
         <div className="flex flex-col items-center gap-3 text-center px-4">
-          <h3 className="text-lg font-bold text-destructive">루틴 생성 실패</h3>
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <h3 className="text-base font-bold text-destructive">
+            루틴 생성 실패
+          </h3>
+          <p className="text-xs text-muted-foreground">{error}</p>
           <button
             onClick={onReset}
-            className="mt-4 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all active:scale-95"
+            className="mt-4 rounded-xl bg-primary px-6 py-3 text-xs font-semibold text-primary-foreground transition-all active:scale-95"
           >
             다시 시도
           </button>
@@ -342,10 +360,10 @@ export function RoutineResults({
     <div className="flex flex-1 flex-col">
       {/* Header */}
       <div className="px-1 pb-5">
-        <h2 className="text-xl font-bold text-foreground">
+        <h2 className="text-lg font-bold text-foreground">
           {routine.routineName}
         </h2>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           {routine.description}
         </p>
       </div>
@@ -360,14 +378,14 @@ export function RoutineResults({
       {/* Tips */}
       {routine.tips && routine.tips.length > 0 && (
         <div className="mt-4 rounded-2xl bg-primary/5 px-4 py-4 ring-1 ring-primary/15">
-          <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-primary">
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-wider text-primary">
             Tips
           </h3>
           <ul className="flex flex-col gap-2">
             {routine.tips.map((tip, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2.5 text-[13px] leading-relaxed text-foreground/80"
+                className="flex items-start gap-2.5 text-xs leading-relaxed text-foreground/80"
               >
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
                 {tip}
@@ -387,17 +405,17 @@ export function RoutineResults({
         </button>
         <button
           onClick={copyAll}
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-[15px] font-bold text-primary-foreground shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all active:scale-[0.98]"
+          className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-primary-foreground shadow-[0_0_30px_rgba(34,197,94,0.2)] transition-all active:scale-[0.98]"
         >
           {allCopied ? (
             <>
               <Check className="h-4 w-4" />
-              {"복사 완료!"}
+              {'복사 완료!'}
             </>
           ) : (
             <>
               <Copy className="h-4 w-4" />
-              {"전체 루틴 복사"}
+              {'전체 루틴 복사'}
             </>
           )}
         </button>
@@ -405,7 +423,7 @@ export function RoutineResults({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log("카카오톡 공유 버튼 클릭");
+            console.log('카카오톡 공유 버튼 클릭');
             shareToKakao();
           }}
           className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-2xl bg-[#FEE500] text-[#000000] transition-all active:scale-95 hover:bg-[#FEE500]/90 cursor-pointer"
